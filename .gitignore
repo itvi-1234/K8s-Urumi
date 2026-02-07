@@ -29,3 +29,7 @@ kubeconfig
 
 # Helm
 charts/*.tgz
+
+IDEMPOTENCY.md
+CHANGES.md
+ENHANCEMENTS_PLAN.md

@@ -15,6 +15,53 @@ export class WooCommerceProvisioner {
         console.log(`📦 Provisioning WooCommerce store: ${store.name}`);
 
         try {
+            // Check if namespace exists (idempotency check)
+            const namespaceExists = await this.checkNamespaceExists(store.namespace);
+
+            if (namespaceExists) {
+                console.log(`⚠️  Namespace ${store.namespace} already exists - checking provisioning status`);
+
+                // Check if Helm release exists
+                const helmExists = await this.checkHelmReleaseExists(store.helm_release, store.namespace);
+
+                if (helmExists) {
+                    console.log(`✅ Store already fully provisioned - verifying readiness`);
+
+                    // Verify pods are ready
+                    const podsReady = await this.checkPodsReady(store.namespace);
+
+                    if (podsReady) {
+                        // Ensure host entry exists
+                        await addHostEntry(store.name, this.domain);
+                        const url = `http://${store.name}.${this.domain}`;
+                        console.log(`✅ Store is ready at ${url}`);
+                        return { success: true, url };
+                    } else {
+                        console.log(`⚠️  Pods not ready - waiting for completion`);
+                        await this.waitForReady(store.namespace);
+                        await addHostEntry(store.name, this.domain);
+                        const url = `http://${store.name}.${this.domain}`;
+                        return { success: true, url };
+                    }
+                } else {
+                    console.log(`⚠️  Partial provisioning detected - resuming from Helm installation`);
+                    // Namespace exists but Helm not installed - resume provisioning
+                    await this.installHelmChart(store);
+                    console.log(`✅ Helm chart installed: ${store.helm_release}`);
+
+                    await this.waitForReady(store.namespace);
+                    console.log(`✅ Pods are ready`);
+
+                    await addHostEntry(store.name, this.domain);
+                    const url = `http://${store.name}.${this.domain}`;
+                    console.log(`✅ Store URL: ${url}`);
+                    return { success: true, url };
+                }
+            }
+
+            // Fresh provisioning - namespace doesn't exist
+            console.log(`🆕 Fresh provisioning - creating all resources`);
+
             // Step 1: Create namespace
             await this.createNamespace(store.namespace);
             console.log(`✅ Namespace created: ${store.namespace}`);
@@ -111,6 +158,50 @@ export class WooCommerceProvisioner {
             return stdout;
         } catch (error) {
             throw new Error(`Helm install failed: ${error.message}`);
+        }
+    }
+
+    // Idempotency helper methods
+    async checkNamespaceExists(namespace) {
+        try {
+            await k8sApi.readNamespace(namespace);
+            return true;
+        } catch (error) {
+            if (error.response?.statusCode === 404) {
+                return false;
+            }
+            throw error;
+        }
+    }
+
+    async checkHelmReleaseExists(releaseName, namespace) {
+        try {
+            const { stdout } = await execAsync(`helm list -n ${namespace} -o json`);
+            const releases = JSON.parse(stdout || '[]');
+            return releases.some(r => r.name === releaseName);
+        } catch (error) {
+            console.warn(`Error checking Helm release: ${error.message}`);
+            return false;
+        }
+    }
+
+    async checkPodsReady(namespace) {
+        try {
+            const pods = await k8sApi.listNamespacedPod(namespace);
+
+            if (pods.body.items.length === 0) {
+                return false;
+            }
+
+            const allReady = pods.body.items.every(pod => {
+                return pod.status.phase === 'Running' &&
+                    pod.status.conditions?.some(c => c.type === 'Ready' && c.status === 'True');
+            });
+
+            return allReady;
+        } catch (error) {
+            console.warn(`Error checking pod status: ${error.message}`);
+            return false;
         }
     }
 
