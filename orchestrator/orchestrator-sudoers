@@ -1,0 +1,8 @@
+# Allow orchestrator to manage /etc/hosts without password
+# This file should be placed in /etc/sudoers.d/
+# Usage: sudo cp orchestrator-sudoers /etc/sudoers.d/orchestrator
+# Then: sudo chmod 0440 /etc/sudoers.d/orchestrator
+
+# Allow the current user to run specific commands for /etc/hosts management
+%sudo ALL=(ALL) NOPASSWD: /usr/bin/tee -a /etc/hosts
+%sudo ALL=(ALL) NOPASSWD: /bin/cp /tmp/hosts-* /etc/hosts

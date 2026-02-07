@@ -1,0 +1,36 @@
+storeName: my-store
+domain: local.test
+
+wordpress:
+  image: wordpress:latest
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  persistence:
+    size: 10Gi
+    storageClass: standard
+
+mysql:
+  image: mysql:8.0
+  rootPassword: changeme123
+  database: wordpress
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  persistence:
+    size: 10Gi
+    storageClass: standard
+
+ingress:
+  enabled: true
+  className: nginx
+  tls: false
