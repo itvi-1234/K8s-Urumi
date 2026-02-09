@@ -19,6 +19,10 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 - [Configuration](#-configuration)
 - [Troubleshooting](#-troubleshooting)
 
+## This is how it works:
+
+![Dashboard](image.png)
+
 ## ✨ Features
 
 ### Core Capabilities
@@ -74,10 +78,6 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 | **Ingress** | nginx-ingress | HTTP routing to stores |
 
 ## 🚀 Quick Start
-
-This is how it works:
-
-![Dashboard](image.png)
 
 ### Prerequisites
 
