@@ -20,15 +20,22 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 
 ## 📋 Table of Contents
 
+- [Dashboard](#dashboard)
+- [Core Specialties](#core-specialties)
+- [Quick Start](#-quick-start)
+- [Usage](#-usage)
+- [Production Deployment](#-production-deployment)
+- [Deliverables](#-deliverables-in-this-repository)
+- [System Design & Tradeoffs](#-system-design--tradeoffs)
 - [Features](#-features)
 - [Architecture](#-architecture)
-- [Quick Start (Local)](#-quick-start-local)
-- [Production Deployment](#-production-deployment)
-- [Usage](#-usage)
 - [Development](#-development)
-- [Project Structure](#-project-structure)
 - [Configuration](#-configuration)
 - [Troubleshooting](#-troubleshooting)
+- [Monitoring](#-monitoring)
+- [Roadmap](#-roadmap)
+- [License](#-license)
+- [Contributing](#-contributing)
 
 
 ## 🚀 Quick Start
@@ -80,7 +87,7 @@ npm install
 Edit `backend/.env`:
 
 ```env
-DB_HOST=postgres-postgresql.platform.svc.cluster.local
+DB_HOST=Localhost
 DB_PORT=5432
 DB_NAME=orchestrator
 DB_USER=postgres
@@ -91,7 +98,7 @@ PORT=3000
 For orchestrator, create `orchestrator/.env`:
 
 ```env
-DB_HOST=postgres-postgresql.platform.svc.cluster.local
+DB_HOST=Localhost
 DB_PORT=5432
 DB_NAME=orchestrator
 DB_USER=postgres
