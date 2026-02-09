@@ -31,90 +31,6 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 - [Troubleshooting](#-troubleshooting)
 
 
-## 📦 Deliverables in this Repository
-
-- **Source Code**:
-  - `backend/`: Node.js/Express REST API for managing store metadata.
-  - `dashboard/`: React + Vite frontend for user interaction.
-  - `orchestrator/`: Specialized Node.js Kubernetes controller for provisioning and reconciliation.
-- **Infrastructure**:
-  - `helm/`: Helm charts for the platform and store templates.
-  - `scripts/`: Automation for local development setup.
-
-## 📐 System Design & Tradeoffs
-
-### Architecture Choice: Async Orchestration
-We use an **asynchronous control loop** (Orchestrator) rather than direct provisioning from the API.
-- **Why**: Decouples user request from long-running K8s operations. Prevents API timeouts.
-- **Tradeoff**: Complexity increases (need to handle state sync), but reliability is much higher.
-
-### Idempotency & Failure Handling
-- **Idempotency**: The orchestrator checks if a namespace/release exists before acting. If a provision step fails half-way, the next cycle resumes or cleans up.
-- **Timeout**: Provisions taking >15 mins are marked `failed`.
-- **Cleanup**: "Hard deletes" remove the entire Namespace, ensuring no orphaned PVCs or ConfigMaps remain.
-
-### Production Readiness: What Changes?
-| Component | Local (Kind) | Production (Cloud) |
-| :--- | :--- | :--- |
-| **DNS** | `*.local.dev` (hosts file) | `*.yourdomain.com` (Wildcard A Record) |
-| **Ingress** | `ingress-nginx` (HTTP) | `ingress-nginx` + **Cert-Manager** (HTTPS) |
-| **Storage** | Standard (HostPath) | **Managed Block Storage** (EBS/Longhorn) |
-| **Secrets** | Env vars / ConfigMaps | **Standard K8s Secrets** (or Sealed Secrets) |
-
-## ✨ Features
-
-### Core Capabilities
-- **Multi-Engine Support**: WooCommerce (WordPress + MySQL) and MedusaJS (Node.js + PostgreSQL + Redis)
-- **One-Click Provisioning**: Automated deployment of complete e-commerce stacks
-- **Namespace Isolation**: Each store runs in its own Kubernetes namespace with ResourceQuotas
-- **Beautiful Dashboard**: Modern React UI with real-time status updates
-- **Idempotent Operations**: Safe retry logic for provisioning and cleanup
-- **Production-Ready**: Same Helm charts work locally and in production
-
-### Advanced Features
-- **Resource Quotas**: Per-store CPU/memory limits to prevent resource exhaustion
-- **Health Monitoring**: Readiness/liveness probes for all components
-- **Audit Logging**: Track who created/deleted what and when
-- **Clean Teardown**: Complete resource cleanup on store deletion
-- **Auto-Refresh**: Dashboard polls every 5 seconds for status updates
-- **Error Reporting**: Clear error messages when provisioning fails
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Platform Layer                          │
-│  ┌──────────┐  ┌──────────┐  ┌─────────────┐  ┌──────────┐│
-│  │Dashboard │→ │ Backend  │→ │Orchestrator │→ │PostgreSQL││
-│  │ (React)  │  │   API    │  │(Controller) │  │          ││
-│  └──────────┘  └──────────┘  └─────────────┘  └──────────┘│
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                     Store Layer (Tenants)                   │
-│  ┌────────────────────┐      ┌────────────────────┐        │
-│  │ Namespace: store-1 │      │ Namespace: store-2 │        │
-│  │ ┌────────────────┐ │      │ ┌────────────────┐ │        │
-│  │ │  WooCommerce   │ │      │ │    MedusaJS    │ │        │
-│  │ │  + WordPress   │ │      │ │  + Storefront  │ │        │
-│  │ │  + MySQL       │ │      │ │  + PostgreSQL  │ │        │
-│  │ └────────────────┘ │      │ │  + Redis       │ │        │
-│  └────────────────────┘      │ └────────────────┘ │        │
-│                               └────────────────────┘        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Component Responsibilities
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Dashboard** | React + Vite | User interface for store management |
-| **Backend API** | Node.js + Express | REST API for CRUD operations |
-| **Orchestrator** | Node.js + K8s Client | Reconciliation loop for provisioning |
-| **PostgreSQL** | PostgreSQL 15 | Store metadata and audit logs |
-| **Helm Charts** | Helm 3 | Package and deploy stores |
-| **Ingress** | nginx-ingress | HTTP routing to stores |
-
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -364,6 +280,91 @@ helm install platform ./helm/platform \
 ### 6. Access Production Dashboard
 
 Visit: **https://dashboard.yourdomain.com**
+
+
+## 📦 Deliverables in this Repository
+
+- **Source Code**:
+  - `backend/`: Node.js/Express REST API for managing store metadata.
+  - `dashboard/`: React + Vite frontend for user interaction.
+  - `orchestrator/`: Specialized Node.js Kubernetes controller for provisioning and reconciliation.
+- **Infrastructure**:
+  - `helm/`: Helm charts for the platform and store templates.
+  - `scripts/`: Automation for local development setup.
+
+## 📐 System Design & Tradeoffs
+
+### Architecture Choice: Async Orchestration
+We use an **asynchronous control loop** (Orchestrator) rather than direct provisioning from the API.
+- **Why**: Decouples user request from long-running K8s operations. Prevents API timeouts.
+- **Tradeoff**: Complexity increases (need to handle state sync), but reliability is much higher.
+
+### Idempotency & Failure Handling
+- **Idempotency**: The orchestrator checks if a namespace/release exists before acting. If a provision step fails half-way, the next cycle resumes or cleans up.
+- **Timeout**: Provisions taking >15 mins are marked `failed`.
+- **Cleanup**: "Hard deletes" remove the entire Namespace, ensuring no orphaned PVCs or ConfigMaps remain.
+
+### Production Readiness: What Changes?
+| Component | Local (Kind) | Production (Cloud) |
+| :--- | :--- | :--- |
+| **DNS** | `*.local.dev` (hosts file) | `*.yourdomain.com` (Wildcard A Record) |
+| **Ingress** | `ingress-nginx` (HTTP) | `ingress-nginx` + **Cert-Manager** (HTTPS) |
+| **Storage** | Standard (HostPath) | **Managed Block Storage** (EBS/Longhorn) |
+| **Secrets** | Env vars / ConfigMaps | **Standard K8s Secrets** (or Sealed Secrets) |
+
+## ✨ Features
+
+### Core Capabilities
+- **Multi-Engine Support**: WooCommerce (WordPress + MySQL) and MedusaJS (Node.js + PostgreSQL + Redis)
+- **One-Click Provisioning**: Automated deployment of complete e-commerce stacks
+- **Namespace Isolation**: Each store runs in its own Kubernetes namespace with ResourceQuotas
+- **Beautiful Dashboard**: Modern React UI with real-time status updates
+- **Idempotent Operations**: Safe retry logic for provisioning and cleanup
+- **Production-Ready**: Same Helm charts work locally and in production
+
+### Advanced Features
+- **Resource Quotas**: Per-store CPU/memory limits to prevent resource exhaustion
+- **Health Monitoring**: Readiness/liveness probes for all components
+- **Audit Logging**: Track who created/deleted what and when
+- **Clean Teardown**: Complete resource cleanup on store deletion
+- **Auto-Refresh**: Dashboard polls every 5 seconds for status updates
+- **Error Reporting**: Clear error messages when provisioning fails
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Platform Layer                          │
+│  ┌──────────┐  ┌──────────┐  ┌─────────────┐  ┌──────────┐│
+│  │Dashboard │→ │ Backend  │→ │Orchestrator │→ │PostgreSQL││
+│  │ (React)  │  │   API    │  │(Controller) │  │          ││
+│  └──────────┘  └──────────┘  └─────────────┘  └──────────┘│
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                     Store Layer (Tenants)                   │
+│  ┌────────────────────┐      ┌────────────────────┐        │
+│  │ Namespace: store-1 │      │ Namespace: store-2 │        │
+│  │ ┌────────────────┐ │      │ ┌────────────────┐ │        │
+│  │ │  WooCommerce   │ │      │ │    MedusaJS    │ │        │
+│  │ │  + WordPress   │ │      │ │  + Storefront  │ │        │
+│  │ │  + MySQL       │ │      │ │  + PostgreSQL  │ │        │
+│  │ └────────────────┘ │      │ │  + Redis       │ │        │
+│  └────────────────────┘      │ └────────────────┘ │        │
+│                               └────────────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Component Responsibilities
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Dashboard** | React + Vite | User interface for store management |
+| **Backend API** | Node.js + Express | REST API for CRUD operations |
+| **Orchestrator** | Node.js + K8s Client | Reconciliation loop for provisioning |
+| **PostgreSQL** | PostgreSQL 15 | Store metadata and audit logs |
+| **Helm Charts** | Helm 3 | Package and deploy stores |
+| **Ingress** | nginx-ingress | HTTP routing to stores |
 
 ## 🛠️ Development
 
