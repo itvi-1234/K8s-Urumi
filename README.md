@@ -73,7 +73,11 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 | **Helm Charts** | Helm 3 | Package and deploy stores |
 | **Ingress** | nginx-ingress | HTTP routing to stores |
 
-## 🚀 Quick Start (Local)
+## 🚀 Quick Start
+
+This is how it works:
+
+![Dashboard](image.png)
 
 ### Prerequisites
 
