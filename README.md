@@ -10,11 +10,11 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 
 ## Dashboard:
 
-![Dashboard](Dashboard.png)
+![Dashboard](assets/Dashboard.png)
 
 ## Core specialties:
 
-![Specialities](Specialities.png)
+![Specialities](assets/Specialities.png)
 
 
 ## 📋 Table of Contents
@@ -291,7 +291,7 @@ Visit: **https://dashboard.yourdomain.com**
 
 The following diagram illustrates the complete lifecycle of a store creation request, from the user's click to the final deployment.
 
-![End to End Flow](End_to_end_flow.png)
+![End to End Flow](assets/End_to_end_flow.png)
 
 
 ## 📦 Deliverables in this Repository
@@ -341,13 +341,12 @@ We use an **asynchronous control loop** (Orchestrator) rather than direct provis
 - **Clean Teardown**: Complete resource cleanup on store deletion
 - **Auto-Refresh**: Dashboard polls every 5 seconds for status updates
 - **Error Reporting**: Clear error messages when provisioning fails
-![Dashboard](assets/Dashboard.png)
 
-## Core specialties:
+## UI showing clear Timelines:
 
-![Specialities](assets/Specialities.png)
+![Timeline](assets/Timeline.png)
 
-## ⏱️ Rate Limiting & Abuse Prevention Timeline
+## ⏱️ Rate Limiting 
 
 To ensure system stability, we enforce strict rate limits. Here is how the system handles bursts of traffic:
 
