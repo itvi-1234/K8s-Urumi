@@ -32,5 +32,5 @@ mysql:
 
 ingress:
   enabled: true
-  className: nginx
+  className: traefik
   tls: false

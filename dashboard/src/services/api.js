@@ -31,5 +31,23 @@ export const api = {
     async getHealth() {
         const response = await fetch(`${API_BASE}/health`);
         return response.json();
+    },
+
+    async getStoreEvents(storeId, limit = 10) {
+        const response = await fetch(`${API_BASE}/stores/${storeId}/events?limit=${limit}`);
+        if (!response.ok) throw new Error('Failed to fetch store events');
+        return response.json();
+    },
+
+    async getMetrics() {
+        const response = await fetch(`${API_BASE}/metrics`);
+        if (!response.ok) throw new Error('Failed to fetch metrics');
+        return response.json();
+    },
+
+    async getRecentEvents(limit = 20) {
+        const response = await fetch(`${API_BASE}/events?limit=${limit}`);
+        if (!response.ok) throw new Error('Failed to fetch events');
+        return response.json();
     }
 };

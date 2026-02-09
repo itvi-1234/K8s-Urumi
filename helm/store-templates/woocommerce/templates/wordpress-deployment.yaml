@@ -31,9 +31,21 @@ spec:
           limits:
             cpu: 50m
             memory: 64Mi
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 33  # www-data user in WordPress image
+        fsGroup: 33
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: wordpress
         image: {{ .Values.wordpress.image }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false  # WordPress needs to write to filesystem
         env:
         - name: WORDPRESS_DB_HOST
           value: mysql:3306

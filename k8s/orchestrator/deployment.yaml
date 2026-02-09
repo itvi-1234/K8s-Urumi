@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  namespace: platform
+  labels:
+    app: orchestrator
+    component: provisioning
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+        component: provisioning
+    spec:
+      serviceAccountName: store-orchestrator
+      containers:
+      - name: orchestrator
+        image: node:18-alpine
+        workingDir: /app
+        command: ["npm", "start"]
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://postgres:postgres@postgres-postgresql:5432/orchestrator"
+        - name: NODE_ENV
+          value: "production"
+        - name: LEADER_ELECTION_ENABLED
+          value: "true"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "ps aux | grep 'node' | grep -v grep"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "ps aux | grep 'node' | grep -v grep"
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: app-code
+        emptyDir: {}
+      # TODO: Replace emptyDir with actual code deployment

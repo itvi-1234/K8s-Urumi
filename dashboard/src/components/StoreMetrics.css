@@ -1,0 +1,62 @@
+.store-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 6px;
+    border: 1px solid var(--border, #334155);
+}
+
+.metric2 {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 100px;
+}
+
+.metric-label2 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: rgb(52, 219, 107);
+}
+
+.metric-value2 {
+    font-size: 0.9rem;
+    color: var(--text-primary, #0b7bec);
+    font-weight: 500;
+}
+
+.error-metric {
+    flex: 1 1 100%;
+    padding: 0.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 4px;
+    border-left: 3px solid var(--danger, #ef4444);
+}
+
+.error-metric .metric-label2 {
+    color: var(--danger, #ef4444);
+}
+
+.error-message {
+    color: var(--danger, #ef4444);
+    font-size: 0.85rem;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .store-metrics {
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .metric2 {
+        min-width: 80px;
+    }
+}

@@ -1,4 +1,10 @@
+import { useState } from 'react';
+import { StoreMetrics } from './StoreMetrics';
+import { ActivityTimeline } from './ActivityTimeline';
+
 export function StoreCard({ store, onDelete }) {
+    const [showTimeline, setShowTimeline] = useState(false);
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'ready': return 'bg-green-100 text-green-800 border-green-300';
@@ -48,13 +54,18 @@ export function StoreCard({ store, onDelete }) {
                     <span>Namespace: {store.namespace}</span>
                 </div>
 
-                {store.error_message && (
-                    <div className="error-message">
-                        <strong>Error:</strong> {store.status === 'failed'
-                            ? 'Store provisioning failed. Please try deleting and recreating the store.'
-                            : 'An error occurred. Please contact support if this persists.'}
-                    </div>
-                )}
+                {/* Store Metrics */}
+                <StoreMetrics store={store} />
+
+                {/* Activity Timeline Toggle */}
+                <button
+                    className="timeline-toggle"
+                    onClick={() => setShowTimeline(!showTimeline)}
+                >
+                    {showTimeline ? '▼' : '▶'} Activity Timeline
+                </button>
+
+                {showTimeline && <ActivityTimeline storeId={store.id} />}
             </div>
 
             <div className="store-actions">

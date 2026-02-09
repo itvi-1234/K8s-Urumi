@@ -1,0 +1,61 @@
+# Production Helm Values for WooCommerce Stores
+
+# Domain configuration - CHANGE THIS TO YOUR DOMAIN
+domain: "example.com"
+
+# WordPress configuration
+wordpress:
+  image: "wordpress:6.4-apache"
+  replicas: 1
+  
+  # Resource limits for small VPS
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  # Persistent storage
+  persistence:
+    enabled: true
+    storageClass: "local-path"  # k3s default
+    size: 5Gi
+
+# MySQL configuration
+mysql:
+  image: "mysql:8.0"
+  
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  # Persistent storage
+  persistence:
+    enabled: true
+    storageClass: "local-path"
+    size: 5Gi
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "traefik"  # k3s default ingress controller
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  tls:
+    enabled: true
+
+# NetworkPolicy (security)
+networkPolicy:
+  enabled: true
+
+# Security context (non-root containers)
+securityContext:
+  enabled: true

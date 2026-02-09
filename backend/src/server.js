@@ -3,6 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { initDatabase } from './db/postgres.js';
 import storeRoutes from './routes/stores.js';
+import eventsRoutes from './routes/events.js';
+import metricsRoutes from './routes/metrics.js';
+import upgradeRoutes from './routes/upgrades.js';
+import { apiRateLimiter } from './middleware/rateLimit.js';
 
 dotenv.config();
 
@@ -13,6 +17,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Apply general rate limiting to all API routes
+app.use('/api', apiRateLimiter);
+
 // Request logging
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
@@ -21,6 +28,9 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api', storeRoutes);
+app.use('/api', eventsRoutes);
+app.use('/api', metricsRoutes);
+app.use('/api', upgradeRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {

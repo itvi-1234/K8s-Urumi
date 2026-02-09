@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useStores } from './hooks/useStores';
 import { StoreCard } from './components/StoreCard';
 import { CreateStoreModal } from './components/CreateStoreModal';
+import { PlatformMetrics } from './components/PlatformMetrics';
 import './App.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
                         + Create New Store
                     </button>
                 </div>
+                <PlatformMetrics />
             </header>
 
             <main className="app-main">

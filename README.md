@@ -17,7 +17,6 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 ![Specialities](Specialities.png)
 
 
-
 ## 📋 Table of Contents
 
 - [Dashboard](#dashboard)
@@ -342,13 +341,17 @@ We use an **asynchronous control loop** (Orchestrator) rather than direct provis
 - **Clean Teardown**: Complete resource cleanup on store deletion
 - **Auto-Refresh**: Dashboard polls every 5 seconds for status updates
 - **Error Reporting**: Clear error messages when provisioning fails
+![Dashboard](assets/Dashboard.png)
 
+## Core specialties:
 
-## ⏱️ Rate Limiting & Abuse Prevention Timeline(Just for exmaple)
+![Specialities](assets/Specialities.png)
+
+## ⏱️ Rate Limiting & Abuse Prevention Timeline
 
 To ensure system stability, we enforce strict rate limits. Here is how the system handles bursts of traffic:
 
-![Limit Handling](Limit_handling.png)
+![Limit Handling](assets/Limit_handling.png)
 
 
 ## 🏗️ Architecture

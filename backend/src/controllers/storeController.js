@@ -1,4 +1,6 @@
 import { storeModel } from '../models/store.js';
+import { logAudit } from '../utils/audit.js';
+import { logEvent } from '../utils/events.js';
 import Joi from 'joi';
 
 // Validation schema
@@ -60,13 +62,21 @@ export const storeController = {
             const store = await storeModel.create(value);
 
             // Log audit
-            await storeModel.logAudit(
-                'anonymous', // TODO: Add user authentication
-                'create',
-                store.id,
-                req.ip,
-                { name: value.name, type: value.type }
-            );
+            await logAudit({
+                storeId: store.id,
+                action: 'create',
+                details: { name: value.name, type: value.type },
+                ipAddress: req.ip
+            });
+
+            // Log event
+            await logEvent({
+                storeId: store.id,
+                eventType: 'store_created',
+                message: `Store '${value.name}' created`,
+                details: { type: value.type },
+                severity: 'success'
+            });
 
             res.status(201).json({ success: true, data: store });
         } catch (error) {
@@ -87,13 +97,21 @@ export const storeController = {
             await storeModel.updateStatus(req.params.id, 'deleting');
 
             // Log audit
-            await storeModel.logAudit(
-                'anonymous',
-                'delete',
-                store.id,
-                req.ip,
-                { name: store.name }
-            );
+            await logAudit({
+                storeId: store.id,
+                action: 'delete',
+                details: { name: store.name },
+                ipAddress: req.ip
+            });
+
+            // Log event
+            await logEvent({
+                storeId: store.id,
+                eventType: 'deletion_requested',
+                message: `Deletion requested for store '${store.name}'`,
+                details: { name: store.name },
+                severity: 'warning'
+            });
 
             res.json({ success: true, message: 'Store deletion initiated' });
         } catch (error) {

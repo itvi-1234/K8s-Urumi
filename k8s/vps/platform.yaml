@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+  namespace: platform
+  labels:
+    app: backend-api
+spec:
+  replicas: 1 # Start small for t3.micro
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+    spec:
+      containers:
+      - name: backend
+        image: store-orchestrator-backend:latest
+        imagePullPolicy: Never # Using local image in k3s
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_HOST
+          value: "postgres-postgresql"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "orchestrator"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASSWORD
+          value: "postgres"
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-api
+  namespace: platform
+spec:
+  type: ClusterIP
+  selector:
+    app: backend-api
+  ports:
+  - port: 80
+    targetPort: 3000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+  namespace: platform
+  labels:
+    app: orchestrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      serviceAccountName: store-orchestrator
+      containers:
+      - name: orchestrator
+        image: store-orchestrator-orchestrator:latest
+        imagePullPolicy: Never
+        env:
+        - name: DB_HOST
+          value: "postgres-postgresql"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "orchestrator"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASSWORD
+          value: "postgres"
+        - name: NODE_ENV
+          value: "production"
+        - name: WOOCOMMERCE_CHART_PATH
+          value: "/app/helm/store-templates/woocommerce"
+        - name: DOMAIN
+          value: "43.205.215.225.nip.io"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+      - name: dashboard
+        image: store-orchestrator-dashboard:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 20m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  namespace: platform
+spec:
+  type: ClusterIP
+  selector:
+    app: dashboard
+  ports:
+  - port: 80
+    targetPort: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: platform-ingress
+  namespace: platform
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: 43.205.215.225.nip.io
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-api
+            port:
+              number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dashboard
+            port:
+              number: 80

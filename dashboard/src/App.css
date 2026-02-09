@@ -47,6 +47,7 @@ body {
   align-items: center;
   gap: 2rem;
   flex-wrap: wrap;
+  margin-bottom: 1.5rem;
 }
 
 .header-title h1 {
@@ -59,6 +60,12 @@ body {
 .header-title p {
   font-size: 1.1rem;
   opacity: 0.9;
+}
+
+.app-header .platform-metrics {
+  max-width: 1400px;
+  margin: 0 auto;
+  justify-content: center;
 }
 
 /* Main Content */
@@ -79,8 +86,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Store Card */
@@ -270,8 +284,15 @@ body {
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -398,7 +419,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error State */
@@ -420,6 +443,27 @@ body {
 .app-footer strong {
   color: var(--primary);
   font-weight: 600;
+}
+
+/* Timeline Toggle */
+.timeline-toggle {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.timeline-toggle:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--primary);
 }
 
 /* Responsive */

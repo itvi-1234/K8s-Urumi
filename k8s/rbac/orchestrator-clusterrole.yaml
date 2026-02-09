@@ -1,0 +1,69 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: store-orchestrator
+  labels:
+    app: store-orchestrator
+rules:
+# Namespace management
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["create", "get", "list", "delete", "patch"]
+
+# Pod management (read-only for status checks)
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get"]
+
+# Service management
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["create", "get", "list", "delete", "patch"]
+
+# PersistentVolumeClaim management
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["create", "get", "list", "delete", "patch"]
+
+# ConfigMap and Secret management
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["create", "get", "list", "delete", "patch"]
+
+# ResourceQuota management
+- apiGroups: [""]
+  resources: ["resourcequotas"]
+  verbs: ["create", "get", "list", "delete", "patch"]
+
+# LimitRange management
+- apiGroups: [""]
+  resources: ["limitranges"]
+  verbs: ["create", "get", "list", "delete", "patch"]
+
+# Deployment management
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets"]
+  verbs: ["create", "get", "list", "delete", "patch", "update"]
+
+- apiGroups: ["apps"]
+  resources: ["deployments/status", "statefulsets/status"]
+  verbs: ["get"]
+
+# Ingress management
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["create", "get", "list", "delete", "patch"]
+
+# NetworkPolicy management
+- apiGroups: ["networking.k8s.io"]
+  resources: ["networkpolicies"]
+  verbs: ["create", "get", "list", "delete", "patch"]
+
+# Events (read-only for debugging)
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "list", "watch"]

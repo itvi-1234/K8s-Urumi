@@ -13,9 +13,21 @@ spec:
       labels:
         app: mysql
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999  # mysql user in MySQL image
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: mysql
         image: {{ .Values.mysql.image }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false  # MySQL needs to write to data directory
         env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:

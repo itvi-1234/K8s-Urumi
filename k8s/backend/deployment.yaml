@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+  namespace: platform
+  labels:
+    app: backend-api
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+        component: api
+    spec:
+      containers:
+      - name: backend
+        image: node:18-alpine
+        workingDir: /app
+        command: ["npm", "start"]
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: PORT
+          value: "3000"
+        - name: DATABASE_URL
+          value: "postgresql://postgres:postgres@postgres-postgresql:5432/orchestrator"
+        - name: NODE_ENV
+          value: "production"
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: app-code
+        emptyDir: {}
+      # TODO: Replace emptyDir with actual code deployment
+      # Options: ConfigMap, Git sync, or build container image

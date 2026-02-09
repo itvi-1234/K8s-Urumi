@@ -78,8 +78,10 @@ export class WooCommerceProvisioner {
             await this.waitForReady(store.namespace);
             console.log(`✅ Pods are ready`);
 
-            // Step 5: Add host entry to /etc/hosts
-            await addHostEntry(store.name, this.domain);
+            // Step 5: Add host entry to /etc/hosts (ONLY if not using nip.io)
+            if (!this.domain.includes('nip.io')) {
+                await addHostEntry(store.name, this.domain);
+            }
 
             // Step 6: Get store URL
             const url = `http://${store.name}.${this.domain}`;
@@ -235,16 +237,34 @@ export class WooCommerceProvisioner {
 
         try {
             // Step 1: Uninstall Helm release
-            const helmCommand = `helm uninstall ${store.helm_release} --namespace ${store.namespace}`;
-            await execAsync(helmCommand);
-            console.log(`✅ Helm release uninstalled`);
+            try {
+                const helmCommand = `helm uninstall ${store.helm_release} --namespace ${store.namespace}`;
+                await execAsync(helmCommand);
+                console.log(`✅ Helm release uninstalled`);
+            } catch (error) {
+                if (error.message.includes('not found')) {
+                    console.log(`⚠️  Helm release ${store.helm_release} already gone`);
+                } else {
+                    throw error;
+                }
+            }
 
             // Step 2: Delete namespace (cascades to all resources)
-            await k8sApi.deleteNamespace(store.namespace);
-            console.log(`✅ Namespace deleted: ${store.namespace}`);
+            try {
+                await k8sApi.deleteNamespace(store.namespace);
+                console.log(`✅ Namespace deleted: ${store.namespace}`);
+            } catch (error) {
+                if (error.response?.statusCode === 404) {
+                    console.log(`⚠️  Namespace ${store.namespace} already gone`);
+                } else {
+                    throw error;
+                }
+            }
 
-            // Step 3: Remove host entry from /etc/hosts
-            await removeHostEntry(store.name, this.domain);
+            // Step 3: Remove host entry from /etc/hosts (ONLY if not using nip.io)
+            if (!this.domain.includes('nip.io')) {
+                await removeHostEntry(store.name, this.domain);
+            }
 
             return { success: true };
         } catch (error) {
