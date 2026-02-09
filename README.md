@@ -7,6 +7,17 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 ![React](https://img.shields.io/badge/Frontend-React-61DAFB?logo=react)
 ![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?logo=node.js)
 
+
+## Dashboard:
+
+![Dashboard](Dashboard.png)
+
+## Core specialties:
+
+![Specialities](Specialities.png)
+
+
+
 ## 📋 Table of Contents
 
 - [Features](#-features)
@@ -19,11 +30,36 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 - [Configuration](#-configuration)
 - [Troubleshooting](#-troubleshooting)
 
-## This is how it works:
 
-![Dashboard](image.png)
+## 📦 Deliverables in this Repository
 
-![Specialities](Specialities.png)
+- **Source Code**:
+  - `backend/`: Node.js/Express REST API for managing store metadata.
+  - `dashboard/`: React + Vite frontend for user interaction.
+  - `orchestrator/`: Specialized Node.js Kubernetes controller for provisioning and reconciliation.
+- **Infrastructure**:
+  - `helm/`: Helm charts for the platform and store templates.
+  - `scripts/`: Automation for local development setup.
+
+## 📐 System Design & Tradeoffs
+
+### Architecture Choice: Async Orchestration
+We use an **asynchronous control loop** (Orchestrator) rather than direct provisioning from the API.
+- **Why**: Decouples user request from long-running K8s operations. Prevents API timeouts.
+- **Tradeoff**: Complexity increases (need to handle state sync), but reliability is much higher.
+
+### Idempotency & Failure Handling
+- **Idempotency**: The orchestrator checks if a namespace/release exists before acting. If a provision step fails half-way, the next cycle resumes or cleans up.
+- **Timeout**: Provisions taking >15 mins are marked `failed`.
+- **Cleanup**: "Hard deletes" remove the entire Namespace, ensuring no orphaned PVCs or ConfigMaps remain.
+
+### Production Readiness: What Changes?
+| Component | Local (Kind) | Production (Cloud) |
+| :--- | :--- | :--- |
+| **DNS** | `*.local.dev` (hosts file) | `*.yourdomain.com` (Wildcard A Record) |
+| **Ingress** | `ingress-nginx` (HTTP) | `ingress-nginx` + **Cert-Manager** (HTTPS) |
+| **Storage** | Standard (HostPath) | **Managed Block Storage** (EBS/Longhorn) |
+| **Secrets** | Env vars / ConfigMaps | **Standard K8s Secrets** (or Sealed Secrets) |
 
 ## ✨ Features
 
@@ -93,7 +129,7 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 
 ```bash
 # Clone the repository
-git clone <your-repo>
+git clone github.com/itvi-1234/K8s-Urumi.git
 cd urumi
 
 # Run automated setup (installs Kind, nginx-ingress, PostgreSQL)
@@ -441,7 +477,31 @@ resources:
       memory: 2Gi
 ```
 
-### Resource Quotas (Per Store)
+### Resource Quotas & Scalability (Burstable QoS)
+
+We utilize Kubernetes **Burstable Quality of Service** (QoS) classes. Stores are guaranteed a baseline but can burst during traffic spikes.
+
+| Resource | Request (Guaranteed) | Limit (Hard Cap) | Behavior |
+| :--- | :--- | :--- | :--- |
+| **CPU** | `200m` (0.2 vCPU) | `1000m` (1.0 vCPU) | Throttles if exceeded |
+| **Memory** | `512Mi` | `1Gi` | OOM Kill if exceeded |
+| **Storage** | `10Gi` | `10Gi` | Fixed size |
+
+### 🛡️ Abuse Prevention & Rate Limiting
+
+To protect the platform from flooding and resource exhaustion, we enforce strict API limits (HTTP 429):
+
+- **Store Creation**: Max **5 stores/hour** per IP.
+- **Store Deletion**: Max **10 deletions/hour** per IP.
+- **General API**: Max **100 requests/15 minutes** per IP.
+
+```json
+// Example 429 Response
+{
+  "success": false,
+  "error": "Too many stores created from this IP. Maximum 5 stores per hour allowed."
+}
+```
 
 ```yaml
 requests.cpu: "2"
