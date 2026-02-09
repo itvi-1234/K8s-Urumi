@@ -288,6 +288,12 @@ helm install platform ./helm/platform \
 
 Visit: **https://dashboard.yourdomain.com**
 
+## 🔄 End-to-End Flow
+
+The following diagram illustrates the complete lifecycle of a store creation request, from the user's click to the final deployment.
+
+![End to End Flow](End_to_end_flow.png)
+
 
 ## 📦 Deliverables in this Repository
 
@@ -336,6 +342,14 @@ We use an **asynchronous control loop** (Orchestrator) rather than direct provis
 - **Clean Teardown**: Complete resource cleanup on store deletion
 - **Auto-Refresh**: Dashboard polls every 5 seconds for status updates
 - **Error Reporting**: Clear error messages when provisioning fails
+
+
+## ⏱️ Rate Limiting & Abuse Prevention Timeline(Just for exmaple)
+
+To ensure system stability, we enforce strict rate limits. Here is how the system handles bursts of traffic:
+
+![Limit Handling](Limit_handling.png)
+
 
 ## 🏗️ Architecture
 
