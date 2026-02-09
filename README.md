@@ -23,6 +23,8 @@ A production-ready, multi-tenant SaaS platform that automatically provisions iso
 
 ![Dashboard](image.png)
 
+![Core](urumi_presentation.pdf)
+
 ## ✨ Features
 
 ### Core Capabilities
